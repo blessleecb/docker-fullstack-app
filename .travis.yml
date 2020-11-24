@@ -1,0 +1,23 @@
+language: generic
+
+sudo: required
+
+services:
+ - docker
+
+before_install:
+ - docker build -t blessleecb/react-test-app -f ./frontend/Dockerfile.dev ./frontend
+
+script:
+ - docker run -e CI=true blessleecb/react-test-app npm run test
+
+after_success:
+ - docker build -t blessleecb/docker-frontend ./frontend
+ - docker build -t blessleecb/docker-backend ./backend
+ - docker build -t blessleecb/docker-nginx ./nginx
+
+ - echo "$DOCKER_HUB_PASSWRD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+
+ - docker push blessleecb/docker-frontend
+ - docker push blessleecb/docker-backend
+ - docker push blessleecb/docker-nginx
